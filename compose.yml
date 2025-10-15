@@ -17,4 +17,4 @@ services:
     networks:
       - split-carouser-image
 networks:
-  app_network:
+  split-carouser-image:

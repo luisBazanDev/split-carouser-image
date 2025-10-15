@@ -61,27 +61,27 @@
           const width = img.width;
           const height = img.height;
 
-          const response = await actions.splitImage({
-            type,
-            amount,
-            image: imageBase64,
-            width,
-            height,
-          });
-
-          // resposne as {data:uuid}
-          // download file from /api/downloadZip/uuid
-          if (response && response.data) {
-            const downloadLink = document.createElement("a");
-            downloadLink.href = `/api/downloadZip/${response.data}`;
-            downloadLink.download = "images.zip";
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-          } else {
-            console.error("Error: Invalid response from server.");
-          }
+          actions
+            .splitImage({
+              type,
+              amount,
+              image: imageBase64,
+              width,
+              height,
+            })
+            .then(async (response: any) => {
+              if (response && response.data) {
+                const downloadLink = document.createElement("a");
+                downloadLink.href = `data:application/zip;base64,${response.data}`; // Assuming response.data is base64 for the zip file
+                downloadLink.download = "images.zip"; // Changed to a zip file download
+                downloadLink.style.display = "none";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+              } else {
+                console.error("Error: Invalid response from server.");
+              }
+            });
         };
       };
       reader.readAsDataURL(imageInput);

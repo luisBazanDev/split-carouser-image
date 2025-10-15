@@ -2,16 +2,8 @@ import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { createCanvas, loadImage } from "canvas";
 import { randomUUID } from "crypto";
-import {
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  unlinkSync,
-  writeFileSync,
-} from "fs";
 import Archiver from "archiver";
+import { PassThrough } from "stream";
 
 export const server = {
   splitImage: defineAction({
@@ -65,56 +57,40 @@ export const server = {
         );
 
         // Convert the canvas back to a Base64 string
-        splitImages.push(saveTmpImage(canvas.toBuffer()));
+        splitImages.push(canvas.toBuffer());
       }
 
-      // Generate zip with all splitImages
-      const zipUuid = await zipping(splitImages);
+      console.log("Zipping...");
 
-      // Deelete splitImages
-      deleteImages(splitImages);
-
-      return zipUuid;
+      return await zipping(splitImages);
     },
   }),
 };
 
-function saveTmpImage(buffer: Buffer): string {
-  const uuid = randomUUID();
+async function zipping(images: Buffer[]): Promise<string> {
+  const out = new PassThrough();
+  const chunks: Buffer[] = [];
 
-  if (!existsSync("./tmp")) mkdirSync("./tmp");
+  out.on("data", (chunk) => {
+    chunks.push(chunk);
+  });
 
-  writeFileSync("./tmp/" + uuid + ".png", buffer);
-
-  return uuid;
-}
-
-async function zipping(images: string[]): Promise<string> {
-  const uuid = randomUUID();
-  if (!existsSync("./tmp")) mkdirSync("./tmp");
-  const out = createWriteStream(`./tmp/${uuid}.zip`);
   const archive = Archiver("zip", {
     zlib: { level: 6 },
   });
 
   archive.pipe(out);
 
-  for (const image of images) {
-    archive.file(`./tmp/${image}.png`, {
-      name: `${image}.png`,
+  for (let i = 0; i < images.length; i++) {
+    archive.append(images[i], { name: `${i}.png` });
+  }
+
+  // Esperar a que todos los datos se escriban
+  return new Promise((resolve) => {
+    out.on("end", () => {
+      const zipBuffer = Buffer.concat(chunks);
+      resolve(zipBuffer.toString("base64"));
     });
-  }
-
-  await archive.finalize();
-
-  return uuid;
-}
-
-function deleteImages(images: string[]) {
-  for (const image of images) {
-    const filePath = `./tmp/${image}.png`;
-    if (existsSync(filePath)) {
-      unlinkSync(filePath);
-    }
-  }
+    archive.finalize();
+  });
 }

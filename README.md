@@ -2,6 +2,8 @@
 
 This Astro project allows you to upload an image and split it into multiple horizontal or vertical images, which you can then download as a ZIP file.
 
+[![AGPLv3 License](https://img.shields.io/badge/License-AGPL%20v3-yellow.svg)](./LICENSE)
+
 ## 🚀 Project Structure
 
 Inside your Astro project, you will find a well-organized structure with the following directories and files:

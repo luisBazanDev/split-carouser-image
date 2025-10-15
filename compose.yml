@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    domainname: split-carouser-image
     ports:
       - 4321:4321
     environment:

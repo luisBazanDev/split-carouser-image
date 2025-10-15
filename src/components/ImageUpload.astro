@@ -1,5 +1,13 @@
-<form class="flex flex-col" id="image-upload" method="post">
-  <select name="type" id="form-type">
+<form
+  class="flex flex-col items-center justify-center bg-gray-100 p-6 rounded-lg shadow-md"
+  id="image-upload"
+  method="post"
+>
+  <select
+    name="type"
+    id="form-type"
+    class="mb-4 p-2 rounded border border-gray-300"
+  >
     <option value="horizontal">Horizontal</option>
     <option value="vertical">Vertical</option>
   </select>
@@ -11,14 +19,19 @@
     max="20"
     placeholder="Amount of images"
     value="2"
+    class="mb-4 p-2 rounded border border-gray-300"
   />
   <input
     type="file"
     accept="jpg,png"
     id="form-image"
     placeholder="Image to split"
+    class="mb-4 p-2 rounded border border-gray-300"
   />
-  <button type="submit">Submit</button>
+  <button
+    type="submit"
+    class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Submit</button
+  >
 </form>
 
 <script>

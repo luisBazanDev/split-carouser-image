@@ -1,0 +1,79 @@
+<form class="flex flex-col" id="image-upload" method="post">
+  <select name="type" id="form-type">
+    <option value="horizontal">Horizontal</option>
+    <option value="vertical">Vertical</option>
+  </select>
+  <input
+    type="number"
+    name="amount"
+    id="form-amount"
+    min="2"
+    max="20"
+    placeholder="Amount of images"
+    value="2"
+  />
+  <input
+    type="file"
+    accept="jpg,png"
+    id="form-image"
+    placeholder="Image to split"
+  />
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const form = document.getElementById("image-upload");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const type = (document.getElementById("form-type") as HTMLSelectElement)
+      .value;
+    const amount = parseInt(
+      (document.getElementById("form-amount") as HTMLInputElement).value,
+    );
+    const imageInput = (
+      document.getElementById("form-image") as HTMLInputElement
+    ).files?.[0];
+
+    if (imageInput) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const imageBase64 = reader.result as string;
+
+        const img = new Image();
+        img.src = imageBase64;
+        img.onload = async () => {
+          const width = img.width;
+          const height = img.height;
+
+          const response = await actions.splitImage({
+            type,
+            amount,
+            image: imageBase64,
+            width,
+            height,
+          });
+
+          // resposne as {data:uuid}
+          // download file from /api/downloadZip/uuid
+          if (response && response.data) {
+            const downloadLink = document.createElement("a");
+            downloadLink.href = `/api/downloadZip/${response.data}`;
+            downloadLink.download = "images.zip";
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          } else {
+            console.error("Error: Invalid response from server.");
+          }
+        };
+      };
+      reader.readAsDataURL(imageInput);
+    } else {
+      console.error("No image file selected.");
+    }
+  });
+</script>

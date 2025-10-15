@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    hostname: split-carouser-image
+    container_name: split-carouser-app
     ports:
       - 4321:4321
     environment:
